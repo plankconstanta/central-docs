@@ -1,14 +1,12 @@
-site_name: Единая экосистема проектов
-site_url: https://plankconstanta.github.io/central-docs/
+site_name: "Единая экосистема проектов"
+site_url: "https://plankconstanta.github.io/central-docs/"
 
 use_directory_urls: false
-
-# Исходники будут лежать в стандартной папке docs
-docs_dir: docs
 
 theme:
   name: material
   language: ru
+  custom_dir: null 
   features:
     - navigation.tabs
     - navigation.indexes
