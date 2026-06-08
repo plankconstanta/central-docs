@@ -1,6 +1,8 @@
 site_name: Проекты
 site_url: https://github.io
 
+docs_dir: temp_empty_docs
+
 theme:
   name: material
   language: ru
