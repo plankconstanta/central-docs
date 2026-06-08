@@ -6,7 +6,6 @@ use_directory_urls: false
 theme:
   name: material
   language: ru
-  custom_dir: null 
   features:
     - navigation.tabs
     - navigation.indexes
