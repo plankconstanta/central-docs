@@ -20,7 +20,7 @@ plugins:
         # Импортируем документацию из первого проекта
         - section: 'DocGen'
           import_url: 'https://github.com/plankconstanta/docgen'
-          docs_dir: 'docs' # Какую папку забирать из того репозитория
+          repo_dir: 'docs' # Какую папку забирать из того репозитория
           
         # Импортируем документацию из второго проекта
         #- section: 'DocGen2'
