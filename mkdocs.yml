@@ -1,0 +1,26 @@
+site_name: Проекты
+site_url: https://github.io
+
+theme:
+  name: material
+  language: ru
+  features:
+    - navigation.tabs        # Верхнее главное меню
+    - navigation.indexes     # Возможность кликать по разделам меню
+    - content.code.copy
+
+plugins:
+  - search                   # Тот самый ОБЩИЙ сквозной поиск!
+  
+  - multirepo:
+      cleanup: true
+      repos:
+        # Импортируем документацию из первого проекта
+        - section: 'DocGen'
+          import_url: 'https://github.com/plankconstanta/docgen'
+          docs_dir: 'docs' # Какую папку забирать из того репозитория
+          
+        # Импортируем документацию из второго проекта
+        #- section: 'DocGen2'
+        #  import_url: 'https://github.com/plankconstanta/docgen'
+        #  docs_dir: 'docs'
