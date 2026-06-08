@@ -11,11 +11,19 @@ on:
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
 
+# Даем экшену явные права на публикацию в GitHub Pages
 permissions:
-  contents: write
+  contents: read
+  pages: write
+  id-token: write
+
+# Разрешаем запускать только одну сборку одновременно, чтобы они не конфликтовали
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Central Docs
@@ -32,20 +40,26 @@ jobs:
 
       - name: Inject Token into Config
         run: |
-          sed -i 's|https://github.com/|https://${{ secrets.DOCS_TOKEN }}@github.com/|g' mkdocs.yml
+          sed -i 's|https://github.com|https://${{ secrets.DOCS_TOKEN }}@://github.com|g' mkdocs.yml
 
-      # СОЗДАЕМ ВРЕМЕННУЮ ПАПКУ, ЧТОБЫ МКDOCS НЕ ПАДАЛ С ОШИБКОЙ
       - name: Create Temporary Docs Dir
         run: mkdir -p temp_empty_docs
 
-      # Собираем сайт с флагом --clean, указывая папку вывода (site-dir) строго в docs
+      # Собираем сайт во временную папку 'site' в корне раннера
       - name: Build Site
-        run: mkdocs build --clean --site-dir docs
+        run: mkdocs build --clean --site-dir site
 
-      - name: Commit and Push to /docs
-        run: |
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          git add docs/
-          git diff-index --quiet HEAD || git commit -m "chore: auto-build multirepo site [skip ci]"
-          git push origin main
+      # Настраиваем окружение GitHub Pages
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      # Загружаем скомпилированный HTML как артефакт Pages
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './site' # Указываем папку, где лежит готовый HTML
+
+      # Публикуем артефакт на сайт
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
