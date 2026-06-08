@@ -4,7 +4,12 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch: # Позволяет запускать сборку вручную кнопкой на GitHub
+  workflow_dispatch: 
+  repository_dispatch:
+    types: [update_docs]
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
 
 permissions:
   contents: write
@@ -19,20 +24,23 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.x'
+          python-version: '3.12'
 
-      # Устанавливаем MkDocs, тему Material и плагин Multirepo
       - name: Install dependencies
         run: |
           pip install mkdocs-material mkdocs-multirepo-plugin
 
-      # Подменяем URL репозиториев в mkdocs.yml, внедряя секретный токен для авторизации
       - name: Inject Token into Config
         run: |
           sed -i 's|https://github.com/|https://${{ secrets.DOCS_TOKEN }}@github.com/|g' mkdocs.yml
 
+      # СОЗДАЕМ ВРЕМЕННУЮ ПАПКУ, ЧТОБЫ МКDOCS НЕ ПАДАЛ С ОШИБКОЙ
+      - name: Create Temporary Docs Dir
+        run: mkdir -p temp_empty_docs
+
+      # Собираем сайт с флагом --clean, указывая папку вывода (site-dir) строго в docs
       - name: Build Site
-        run: mkdocs build
+        run: mkdocs build --clean --site-dir docs
 
       - name: Commit and Push to /docs
         run: |
