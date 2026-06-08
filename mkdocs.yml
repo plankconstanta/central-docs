@@ -1,28 +1,16 @@
-site_name: Проекты
+site_name: Единая экосистема проектов
 site_url: https://github.io
 
-docs_dir: temp_empty_docs
+# Исходники будут лежать в стандартной папке docs
+docs_dir: docs
 
 theme:
   name: material
   language: ru
   features:
-    - navigation.tabs        # Верхнее главное меню
-    - navigation.indexes     # Возможность кликать по разделам меню
+    - navigation.tabs
+    - navigation.indexes
     - content.code.copy
 
 plugins:
-  - search                   # Тот самый ОБЩИЙ сквозной поиск!
-  
-  - multirepo:
-      cleanup: true
-      repos:
-        # Импортируем документацию из первого проекта
-        - section: 'DocGen'
-          import_url: 'https://github.com/plankconstanta/docgen'
-          repo_dir: 'docs' # Какую папку забирать из того репозитория
-          
-        # Импортируем документацию из второго проекта
-        #- section: 'DocGen2'
-        #  import_url: 'https://github.com/plankconstanta/docgen'
-        #  docs_dir: 'docs'
+  - search
