@@ -11,5 +11,26 @@ theme:
     - navigation.indexes
     - content.code.copy
 
+# Добавляем настройку цветов ниже:
+  palette:
+    # Настройка для светлой темы
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo # Основной цвет (шапка, навигация)
+      accent: indigo  # Цвет акцентов (ссылки, кнопки)
+      toggle:
+        icon: material/brightness-7
+        name: Перейти на тёмную тему
+
+    # Настройка для тёмной темы
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Перейти на светлую тему
+    
+
 plugins:
   - search
