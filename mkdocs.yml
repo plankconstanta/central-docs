@@ -11,7 +11,7 @@ theme:
     - navigation.indexes
     - content.code.copy
 
-# ПОДКЛЮЧЕНИЕ ФИРМЕННЫХ ШРИФТОВ
+  # ПОДКЛЮЧЕНИЕ ФИРМЕННЫХ ШРИФТОВ
   font:
     text: Inter          # Шрифт для основного текста
     code: Roboto Mono    # Шрифт для блоков кода
@@ -35,3 +35,7 @@ theme:
   
 plugins:
   - search
+
+# Подключение кастомного CSS для точной подгонки HEX-цветов
+extra_css:
+  - stylesheets/extra.css
