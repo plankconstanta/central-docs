@@ -11,11 +11,11 @@ h1, h2, h3, h4, h5, h6 {
 /* Точные цвета бренда AcademCity */
 :root [data-md-color-scheme="default"] {
   /* Основной темно-синий цвет бренда (шапка, элементы навигации) */
-  --md-primary-fg-color:        #1e293b; 
+  --md-primary-fg-color:        #1E3A8A; 
   --md-primary-fg-color--dark:  #0f172a; 
   
   /* Акцентный цвет (активные ссылки, кнопки, подсветка) */
-  --md-accent-fg-color:         #2563eb; 
+  --md-accent-fg-color:         #0D9488; 
   --md-accent-fg-color--transparent: rgba(37, 99, 235, 0.1);
 }
 
