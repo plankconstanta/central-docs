@@ -38,10 +38,8 @@ theme:
   
 plugins:
   - search
-  - print-site:
-      add_to_navigation: false  # Скрываем глобальную выгрузку
-      add_print_site_banner: false
-
+  - print-site
+  
 # Подключение кастомного CSS для точной подгонки HEX-цветов
 extra_css:
   - stylesheets/extra.css
