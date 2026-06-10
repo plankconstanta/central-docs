@@ -11,26 +11,27 @@ theme:
     - navigation.indexes
     - content.code.copy
 
-# Добавляем настройку цветов ниже:
+# ПОДКЛЮЧЕНИЕ ФИРМЕННЫХ ШРИФТОВ
+  font:
+    text: Inter          # Шрифт для основного текста
+    code: Roboto Mono    # Шрифт для блоков кода
+
+  # ЦВЕТОВАЯ ПАЛИТРА ПО СТИЛЮ ACADEMCITY
   palette:
-    # Настройка для светлой темы
     - media: "(prefers-color-scheme: light)"
       scheme: default
-      primary: indigo # Основной цвет (шапка, навигация)
-      accent: indigo  # Цвет акцентов (ссылки, кнопки)
+      primary: blue-grey  # Ближайший стандартный цвет для шапки
+      accent: blue        # Цвет для акцентов и ссылок
       toggle:
         icon: material/brightness-7
         name: Перейти на тёмную тему
-
-    # Настройка для тёмной темы
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
-      primary: indigo
-      accent: indigo
+      primary: blue-grey
+      accent: blue
       toggle:
         icon: material/brightness-4
         name: Перейти на светлую тему
-    
-
+  
 plugins:
   - search
