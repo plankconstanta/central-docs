@@ -25,3 +25,16 @@ h1, h2, h3, h4, h5, h6 {
   --md-primary-fg-color--dark:  #020617;
   --md-accent-fg-color:         #3b82f6;
 }
+
+/* Настройка пропорций для горизонтального логотипа «АкадемСити» */
+.md-header__button.md-logo img, .md-sidebar__src img {
+  height: 2rem;       /* Высота логотипа в шапке */
+  width: auto;        /* Автоматическая ширина, чтобы не сжимался */
+  max-width: 200px;   /* Ограничение максимальной ширины */
+}
+
+/* Изменяем отступы, чтобы логотип смотрелся гармонично */
+.md-header__button.md-logo {
+  padding: 0.2rem;
+  margin-right: 0.5rem;
+}
