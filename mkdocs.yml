@@ -38,8 +38,7 @@ theme:
   
 plugins:
   - search
-  - print-site:
-      add_to_navigation: false # Плагин создаст страницы, но не полезет в меню
+  - print-site
 
 # Подключение кастомного CSS для точной подгонки HEX-цветов
 extra_css:
