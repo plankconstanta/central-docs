@@ -28,7 +28,8 @@ jobs:
           python-version: '3.12'
 
       - name: Install dependencies
-        run: pip install mkdocs-material
+        run:  pip install mkdocs-material
+              pip install mkdocs-print-site-plugin
 
       # Самостоятельно скачиваем папки из ваших проектов в структуру документации
       - name: Fetch Repositories Documentation
