@@ -11,6 +11,9 @@ theme:
     - navigation.indexes
     - content.code.copy
 
+  logo: assets/logo.svg
+  favicon: assets/favicon.ico  
+
   # ПОДКЛЮЧЕНИЕ ФИРМЕННЫХ ШРИФТОВ
   font:
     text: Inter          # Шрифт для основного текста
