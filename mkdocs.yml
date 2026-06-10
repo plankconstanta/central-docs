@@ -43,3 +43,5 @@ plugins:
 # Подключение кастомного CSS для точной подгонки HEX-цветов
 extra_css:
   - stylesheets/extra.css
+hooks:
+  - hooks/auto_download_nav.py  # Скрипт автоматизации
