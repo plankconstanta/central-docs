@@ -38,6 +38,7 @@ theme:
   
 plugins:
   - search
+  - swagger-ui-tag
   - print-site
   
 # Подключение кастомного CSS для точной подгонки HEX-цветов
