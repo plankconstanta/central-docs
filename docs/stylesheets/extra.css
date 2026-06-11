@@ -71,11 +71,7 @@ input {
 ================================================== */
 
 .md-header {
-  background: linear-gradient(
-    90deg,
-    #1E3A8A,
-    #0D9488
-  );
+  background: #1E3A8A;
   box-shadow: none;
 }
 
@@ -88,7 +84,7 @@ input {
 ================================================== */
 
 .md-header__button.md-logo img {
-  height: 3rem;
+  height: 4rem;
   width: auto;
   max-width: 180px;
 }
