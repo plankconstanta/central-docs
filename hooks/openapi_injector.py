@@ -35,9 +35,11 @@ def on_files(files, config):
                 api_page_rel_path = f"{folder}/api-docs.md"
                 api_page_full_path = os.path.join(docs_dir, api_page_rel_path)
                 
+                # Вместо старой записи со swagger-ui пишем:
                 with open(api_page_full_path, "w", encoding="utf-8") as f:
                     f.write(f"# Спецификация API\n\n")
-                    f.write(f'<swagger-ui src="{absolute_spec_url}"/>\n')
+                    # Добавляем тег redoc и отключаем интерактивную кнопку "Try it out" через параметр
+                    f.write(f'<redoc src="{absolute_spec_url}" untrusted-spec="true" disable-search="true"/>\n')
                 
                 new_file = File(
                     path=api_page_rel_path,
