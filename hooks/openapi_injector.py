@@ -10,6 +10,13 @@ def on_files(files, config):
     """
     docs_dir = config['docs_dir']
     
+    # Определяем базовый префикс для GitHub Pages
+    site_url = config.get('site_url', '')
+    if site_url and 'github.io' in site_url:
+        base_prefix = '/' + site_url.split('github.io/')[-1].strip('/') + '/'
+    else:
+        base_prefix = '/'
+
     for folder in os.listdir(docs_dir):
         folder_path = os.path.join(docs_dir, folder)
         
@@ -21,13 +28,18 @@ def on_files(files, config):
                     break
             
             if spec_name:
-                spec_relative_path = f"{folder}/{spec_name}"
+                # ИСПРАВЛЕНИЕ: Формируем жесткий абсолютный URL до файла openapi.json от корня сайта
+                # Получится путь вида: /имя-репозитория/central-docs/docgen/openapi.json
+                absolute_spec_url = f"{base_prefix}central-docs/{folder}/{spec_name}"
+                absolute_spec_url = '/' + absolute_spec_url.lstrip('/').replace('//', '/')
+
                 api_page_rel_path = f"{folder}/api-docs.md"
                 api_page_full_path = os.path.join(docs_dir, api_page_rel_path)
                 
                 with open(api_page_full_path, "w", encoding="utf-8") as f:
                     f.write(f"# Спецификация API\n\n")
-                    f.write(f'<swagger-ui src="{spec_relative_path}"/>\n')
+                    # Передаем в src точный абсолютный путь вместо относительного
+                    f.write(f'<swagger-ui src="{absolute_spec_url}"/>\n')
                 
                 new_file = File(
                     path=api_page_rel_path,
@@ -55,19 +67,18 @@ def on_nav(nav, config, files):
     for item in nav.items:
         if isinstance(item, Section) and item.title != "Главная":
             if item.children:
-                first_child = item.children[0]
+                first_child = item.children
                 
                 if hasattr(first_child, 'url') and '/' in first_child.url:
                     url_parts = [p for p in first_child.url.strip('/').split('/') if p]
                     
-                    # Если в пути есть central-docs, убираем его, чтобы найти чистую папку проекта
                     if "central-docs" in url_parts:
                         url_parts.remove("central-docs")
                         
                     if not url_parts:
                         continue
                         
-                    project_folder = url_parts[0] # Теперь здесь точно "docgen"
+                    project_folder = url_parts
                     
                     # 1. Ссылка на Swagger UI
                     api_page_rel_path = f"{project_folder}/api-docs.md"
