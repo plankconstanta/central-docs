@@ -1,6 +1,6 @@
 import os
-# ИСПРАВЛЕНИЕ: Имя модуля пишется через нижнее подчеркивание
-from openapi3_parser import parse as parse_openapi
+
+from openapi_parser import parse as parse_openapi
 from mkdocs.structure.nav import Section, Link
 from mkdocs.structure.files import File
 
