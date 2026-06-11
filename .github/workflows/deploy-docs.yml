@@ -36,9 +36,12 @@ jobs:
           mkdir -p docs/project-alpha
           
           # Скачиваем проект Альфа и забираем только его доки
-          git clone https://${{ secrets.DOCS_TOKEN }}@github.com/plankconstanta/docgen alpha_repo
-          cp -r alpha_repo/docs/* docs/project-alpha/
-          
+          git clone https://${{ secrets.DOCS_TOKEN }}@github.com/plankconstanta/docgen docgen_repo
+          cp -r docgen_repo/docs/* docs/docgen/
+
+          # Автоматически склеиваем ВСЕ markdown-файлы проекта Альфа в один файл isolated_text.txt
+          # Команда find гарантирует, что мы берем файлы только из этой папки
+          find docs/docgen -name "*.md" -type f | sort | xargs cat > docs/docgen/isolated_text.txt
 
       - name: Build Site
         run: mkdocs build --clean --site-dir site
