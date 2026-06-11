@@ -1,4 +1,5 @@
 import os
+# ИСПРАВЛЕНИЕ: Имя модуля пишется через нижнее подчеркивание
 from openapi3_parser import parse as parse_openapi
 from mkdocs.structure.nav import Section, Link
 from mkdocs.structure.files import File
@@ -191,7 +192,6 @@ def on_nav(nav, config, files):
                     full_api_url = '/' + full_api_url.lstrip('/').replace('//', '/')
                     
                     if "📋 Спецификация API (Таблицы)" not in existing_titles:
-                        # Переименовали пункт меню, чтобы аналитикам было понятнее
                         api_link = Link(title="📋 Спецификация API (Таблицы)", url=full_api_url)
                         item.children.append(api_link)
 
