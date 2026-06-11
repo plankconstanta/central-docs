@@ -18,7 +18,7 @@ def on_nav(nav, config, files):
                     file_url = f"/{project_folder}/isolated_text.txt"
 
                     download_link = Link(
-                        title="📥 Скачать чистый текст (TXT)", 
+                        title="📥 Скачать документацию проекта", 
                         url=file_url
                     )
                     item.children.append(download_link)
