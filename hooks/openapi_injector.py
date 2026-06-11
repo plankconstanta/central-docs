@@ -4,11 +4,17 @@ import subprocess
 from mkdocs.structure.nav import Section, Link
 from mkdocs.structure.files import File
 
-SPEC_EXTENSIONS = [
+OPENAPI_FILES = [
     "openapi.json",
     "openapi.yaml",
     "openapi.yml",
     "swagger.json"
+]
+
+ASYNCAPI_FILES = [
+    "asyncapi.json",
+    "asyncapi.yaml",
+    "asyncapi.yml"
 ]
 
 
@@ -41,6 +47,58 @@ def generate_redoc_html(spec_path, output_path):
         print(f"[ReDoc] Failed for {spec_path}: {e}")
 
 
+def generate_asyncapi_html(spec_name, output_path):
+    """
+    Генерация standalone AsyncAPI HTML.
+    """
+
+    html = f"""
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+
+  <title>AsyncAPI Reference</title>
+
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+
+  <script src="https://unpkg.com/@asyncapi/react-component/browser/asyncapi-react.min.js"></script>
+
+  <style>
+    body {{
+      margin: 0;
+      padding: 0;
+    }}
+  </style>
+</head>
+
+<body>
+
+<div id="asyncapi"></div>
+
+<script>
+
+window.onload = function() {{
+
+    AsyncApiStandalone.render({{
+        schema: "{spec_name}"
+    }}, document.getElementById('asyncapi'));
+
+}};
+
+</script>
+
+</body>
+</html>
+"""
+
+    with open(output_path, "w", encoding="utf-8") as f:
+        f.write(html)
+
+    print(f"[AsyncAPI] Generated: {output_path}")
+
+
 def on_files(files, config):
     docs_dir = config["docs_dir"]
 
@@ -54,40 +112,89 @@ def on_files(files, config):
         if folder == "hooks":
             continue
 
-        spec_name = None
+        openapi_spec = None
 
-        for ext in SPEC_EXTENSIONS:
+        for ext in OPENAPI_FILES:
 
             candidate = os.path.join(folder_path, ext)
 
             if os.path.exists(candidate):
-                spec_name = ext
+                openapi_spec = ext
                 break
 
-        if not spec_name:
+        asyncapi_spec = None
+
+        for ext in ASYNCAPI_FILES:
+
+            candidate = os.path.join(folder_path, ext)
+
+            if os.path.exists(candidate):
+                asyncapi_spec = ext
+                break
+
+        if not openapi_spec and not asyncapi_spec:
             continue
 
-        spec_path = os.path.join(folder_path, spec_name)
+        #
+        # OpenAPI -> api.html
+        #
 
-        api_html_rel_path = f"{folder}/api.html"
-        api_html_full_path = os.path.join(
-            docs_dir,
-            api_html_rel_path
-        )
+        if openapi_spec:
 
-        generate_redoc_html(
-            spec_path,
-            api_html_full_path
-        )
-
-        files.append(
-            File(
-                path=api_html_rel_path,
-                src_dir=docs_dir,
-                dest_dir=config["site_dir"],
-                use_directory_urls=False
+            spec_path = os.path.join(
+                folder_path,
+                openapi_spec
             )
-        )
+
+            api_html_rel_path = f"{folder}/api.html"
+
+            api_html_full_path = os.path.join(
+                docs_dir,
+                api_html_rel_path
+            )
+
+            generate_redoc_html(
+                spec_path,
+                api_html_full_path
+            )
+
+            files.append(
+                File(
+                    path=api_html_rel_path,
+                    src_dir=docs_dir,
+                    dest_dir=config["site_dir"],
+                    use_directory_urls=False
+                )
+            )
+
+        #
+        # AsyncAPI -> asyncapi.html
+        #
+
+        if asyncapi_spec:
+
+            asyncapi_rel_path = (
+                f"{folder}/asyncapi.html"
+            )
+
+            asyncapi_full_path = os.path.join(
+                docs_dir,
+                asyncapi_rel_path
+            )
+
+            generate_asyncapi_html(
+                asyncapi_spec,
+                asyncapi_full_path
+            )
+
+            files.append(
+                File(
+                    path=asyncapi_rel_path,
+                    src_dir=docs_dir,
+                    dest_dir=config["site_dir"],
+                    use_directory_urls=False
+                )
+            )
 
     return files
 
@@ -150,6 +257,10 @@ def on_nav(nav, config, files):
                 if hasattr(child, "title") and child.title:
                     existing_titles.append(child.title)
 
+        #
+        # API Reference
+        #
+
         api_html_path = os.path.join(
             docs_dir,
             project_folder,
@@ -177,6 +288,45 @@ def on_nav(nav, config, files):
                         url=api_url
                     )
                 )
+
+        #
+        # AsyncAPI Reference
+        #
+
+        asyncapi_html_path = os.path.join(
+            docs_dir,
+            project_folder,
+            "asyncapi.html"
+        )
+
+        if os.path.exists(asyncapi_html_path):
+
+            async_url = (
+                f"{base_prefix}"
+                f"central-docs/"
+                f"{project_folder}/asyncapi.html"
+            )
+
+            async_url = (
+                "/"
+                + async_url.lstrip("/")
+            ).replace("//", "/")
+
+            if (
+                "🔄 AsyncAPI Reference"
+                not in existing_titles
+            ):
+
+                item.children.append(
+                    Link(
+                        title="🔄 AsyncAPI Reference",
+                        url=async_url
+                    )
+                )
+
+        #
+        # Download link
+        #
 
         isolated_file_path = os.path.join(
             docs_dir,
