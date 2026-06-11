@@ -1,3 +1,4 @@
+import json
 import os
 import subprocess
 
@@ -47,58 +48,221 @@ def generate_redoc_html(spec_path, output_path):
         print(f"[ReDoc] Failed for {spec_path}: {e}")
 
 
-def generate_asyncapi_html(spec_name, output_path):
+def generate_asyncapi_markdown(spec_path, output_path):
     """
-    Генерация standalone AsyncAPI HTML через Web Component.
-    Работает на GitHub Pages без дополнительных сборщиков.
+    Генерация Markdown-документации по AsyncAPI
+    для аналитиков и архитекторов.
     """
 
-    html = f"""<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
+    with open(spec_path, "r", encoding="utf-8") as f:
+        spec = json.load(f)
 
-    <title>AsyncAPI Reference</title>
+    channels = spec.get("channels", {})
+    messages = spec.get("components", {}).get("messages", {})
 
-    <script src="https://unpkg.com/@asyncapi/web-component@latest/lib/asyncapi-web-component.js"></script>
+    md = []
 
-    <style>
-        html,
-        body {{
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            width: 100%;
-        }}
+    title = (
+        spec.get("info", {})
+        .get("title", "Event Reference")
+    )
 
-        asyncapi-component {{
-            height: 100vh;
-            width: 100%;
-        }}
-    </style>
-</head>
+    description = (
+        spec.get("info", {})
+        .get("description", "")
+    )
 
-<body>
+    md.append(f"# {title}")
+    md.append("")
 
-<asyncapi-component
-    schema-url="{spec_name}">
-</asyncapi-component>
+    if description:
+        md.append(description)
+        md.append("")
 
-</body>
-</html>
-"""
+    #
+    # Summary
+    #
 
-    with open(output_path, "w", encoding="utf-8") as f:
-        f.write(html)
+    if channels:
 
-    print(f"[AsyncAPI] Generated: {output_path}")
+        md.append("## Сводка событий")
+        md.append("")
+
+        md.append("| Канал | Направление | Сообщение |")
+        md.append("|--------|-------------|------------|")
+
+        for channel_name, channel_data in channels.items():
+
+            direction = None
+            message_ref = None
+
+            if "publish" in channel_data:
+
+                direction = "publish"
+
+                message_ref = (
+                    channel_data["publish"]
+                    .get("message", {})
+                    .get("$ref", "")
+                )
+
+            elif "subscribe" in channel_data:
+
+                direction = "subscribe"
+
+                message_ref = (
+                    channel_data["subscribe"]
+                    .get("message", {})
+                    .get("$ref", "")
+                )
+
+            message_name = (
+                message_ref.split("/")[-1]
+                if message_ref
+                else "-"
+            )
+
+            md.append(
+                f"| {channel_name} | "
+                f"{direction or '-'} | "
+                f"{message_name} |"
+            )
+
+        md.append("")
+        md.append("---")
+        md.append("")
+
+    #
+    # Details
+    #
+
+    for channel_name, channel_data in channels.items():
+
+        direction = None
+        message_ref = None
+
+        if "publish" in channel_data:
+
+            direction = "publish"
+
+            message_ref = (
+                channel_data["publish"]
+                .get("message", {})
+                .get("$ref")
+            )
+
+        elif "subscribe" in channel_data:
+
+            direction = "subscribe"
+
+            message_ref = (
+                channel_data["subscribe"]
+                .get("message", {})
+                .get("$ref")
+            )
+
+        if not message_ref:
+            continue
+
+        message_name = message_ref.split("/")[-1]
+
+        message = messages.get(
+            message_name,
+            {}
+        )
+
+        payload = message.get(
+            "payload",
+            {}
+        )
+
+        properties = payload.get(
+            "properties",
+            {}
+        )
+
+        required = set(
+            payload.get(
+                "required",
+                []
+            )
+        )
+
+        md.append(f"## {channel_name}")
+        md.append("")
+
+        md.append(
+            f"**Направление:** `{direction}`"
+        )
+        md.append("")
+
+        md.append(
+            f"**Сообщение:** `{message_name}`"
+        )
+        md.append("")
+
+        md.append("### Поля сообщения")
+        md.append("")
+
+        md.append(
+            "| Поле | Тип | Обязательное | Описание |"
+        )
+
+        md.append(
+            "|------|------|--------------|----------|"
+        )
+
+        for field_name, field_info in properties.items():
+
+            field_type = field_info.get(
+                "type",
+                "-"
+            )
+
+            description = field_info.get(
+                "description",
+                ""
+            )
+
+            required_flag = (
+                "Да"
+                if field_name in required
+                else "Нет"
+            )
+
+            md.append(
+                f"| {field_name} | "
+                f"{field_type} | "
+                f"{required_flag} | "
+                f"{description} |"
+            )
+
+        md.append("")
+        md.append("---")
+        md.append("")
+
+    with open(
+        output_path,
+        "w",
+        encoding="utf-8"
+    ) as f:
+        f.write("\n".join(md))
+
+    print(
+        f"[AsyncAPI] Generated: "
+        f"{output_path}"
+    )
+
 
 def on_files(files, config):
     docs_dir = config["docs_dir"]
 
     for folder in os.listdir(docs_dir):
 
-        folder_path = os.path.join(docs_dir, folder)
+        folder_path = os.path.join(
+            docs_dir,
+            folder
+        )
 
         if not os.path.isdir(folder_path):
             continue
@@ -106,23 +270,39 @@ def on_files(files, config):
         if folder == "hooks":
             continue
 
+        #
+        # OpenAPI
+        #
+
         openapi_spec = None
 
         for ext in OPENAPI_FILES:
 
-            candidate = os.path.join(folder_path, ext)
+            candidate = os.path.join(
+                folder_path,
+                ext
+            )
 
             if os.path.exists(candidate):
+
                 openapi_spec = ext
                 break
+
+        #
+        # AsyncAPI
+        #
 
         asyncapi_spec = None
 
         for ext in ASYNCAPI_FILES:
 
-            candidate = os.path.join(folder_path, ext)
+            candidate = os.path.join(
+                folder_path,
+                ext
+            )
 
             if os.path.exists(candidate):
+
                 asyncapi_spec = ext
                 break
 
@@ -140,7 +320,9 @@ def on_files(files, config):
                 openapi_spec
             )
 
-            api_html_rel_path = f"{folder}/api.html"
+            api_html_rel_path = (
+                f"{folder}/api.html"
+            )
 
             api_html_full_path = os.path.join(
                 docs_dir,
@@ -162,31 +344,38 @@ def on_files(files, config):
             )
 
         #
-        # AsyncAPI -> asyncapi.html
+        # AsyncAPI -> events.md
         #
 
         if asyncapi_spec:
 
-            asyncapi_rel_path = (
-                f"{folder}/asyncapi.html"
+            spec_path = os.path.join(
+                folder_path,
+                asyncapi_spec
             )
 
-            asyncapi_full_path = os.path.join(
+            events_rel_path = (
+                f"{folder}/events.md"
+            )
+
+            events_full_path = os.path.join(
                 docs_dir,
-                asyncapi_rel_path
+                events_rel_path
             )
 
-            generate_asyncapi_html(
-                asyncapi_spec,
-                asyncapi_full_path
+            generate_asyncapi_markdown(
+                spec_path,
+                events_full_path
             )
 
             files.append(
                 File(
-                    path=asyncapi_rel_path,
+                    path=events_rel_path,
                     src_dir=docs_dir,
                     dest_dir=config["site_dir"],
-                    use_directory_urls=False
+                    use_directory_urls=config[
+                        "use_directory_urls"
+                    ]
                 )
             )
 
@@ -197,13 +386,23 @@ def on_nav(nav, config, files):
 
     docs_dir = config["docs_dir"]
 
-    site_url = config.get("site_url", "")
+    site_url = config.get(
+        "site_url",
+        ""
+    )
 
     if site_url and "github.io" in site_url:
-        base_prefix = "/" + site_url.split(
-            "github.io/"
-        )[-1].strip("/") + "/"
+
+        base_prefix = (
+            "/"
+            + site_url.split(
+                "github.io/"
+            )[-1].strip("/")
+            + "/"
+        )
+
     else:
+
         base_prefix = "/"
 
     for item in nav.items:
@@ -233,10 +432,16 @@ def on_nav(nav, config, files):
                 ]
 
                 if "central-docs" in url_parts:
-                    url_parts.remove("central-docs")
+                    url_parts.remove(
+                        "central-docs"
+                    )
 
                 if url_parts:
-                    project_folder = url_parts[0]
+
+                    project_folder = (
+                        url_parts[0]
+                    )
+
                     break
 
         if not project_folder:
@@ -248,8 +453,13 @@ def on_nav(nav, config, files):
 
             for child in item.children:
 
-                if hasattr(child, "title") and child.title:
-                    existing_titles.append(child.title)
+                if (
+                    hasattr(child, "title")
+                    and child.title
+                ):
+                    existing_titles.append(
+                        child.title
+                    )
 
         #
         # API Reference
@@ -274,7 +484,10 @@ def on_nav(nav, config, files):
                 + api_url.lstrip("/")
             ).replace("//", "/")
 
-            if "📘 API Reference" not in existing_titles:
+            if (
+                "📘 API Reference"
+                not in existing_titles
+            ):
 
                 item.children.append(
                     Link(
@@ -284,37 +497,50 @@ def on_nav(nav, config, files):
                 )
 
         #
-        # AsyncAPI Reference
+        # Event Reference
         #
 
-        asyncapi_html_path = os.path.join(
+        events_md_path = os.path.join(
             docs_dir,
             project_folder,
-            "asyncapi.html"
+            "events.md"
         )
 
-        if os.path.exists(asyncapi_html_path):
+        if os.path.exists(events_md_path):
 
-            async_url = (
-                f"{base_prefix}"
-                f"central-docs/"
-                f"{project_folder}/asyncapi.html"
-            )
+            if config.get(
+                "use_directory_urls",
+                True
+            ):
 
-            async_url = (
+                events_url = (
+                    f"{base_prefix}"
+                    f"central-docs/"
+                    f"{project_folder}/events/"
+                )
+
+            else:
+
+                events_url = (
+                    f"{base_prefix}"
+                    f"central-docs/"
+                    f"{project_folder}/events.html"
+                )
+
+            events_url = (
                 "/"
-                + async_url.lstrip("/")
+                + events_url.lstrip("/")
             ).replace("//", "/")
 
             if (
-                "🔄 AsyncAPI Reference"
+                "🔄 Event Reference"
                 not in existing_titles
             ):
 
                 item.children.append(
                     Link(
-                        title="🔄 AsyncAPI Reference",
-                        url=async_url
+                        title="🔄 Event Reference",
+                        url=events_url
                     )
                 )
 
@@ -328,7 +554,9 @@ def on_nav(nav, config, files):
             "isolated_text.txt"
         )
 
-        if os.path.exists(isolated_file_path):
+        if os.path.exists(
+            isolated_file_path
+        ):
 
             file_url = (
                 f"{base_prefix}"
@@ -345,6 +573,7 @@ def on_nav(nav, config, files):
                 "📥 Скачать документацию проекта"
                 not in existing_titles
             ):
+
                 item.children.append(
                     Link(
                         title="📥 Скачать документацию проекта",
