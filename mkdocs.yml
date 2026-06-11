@@ -44,4 +44,4 @@ plugins:
 extra_css:
   - stylesheets/extra.css
 hooks:
-  - hooks/auto_download_file.py  # Скрипт автоматизации
+  - hooks/openapi_injector.py  # Скрипт автоматизации
