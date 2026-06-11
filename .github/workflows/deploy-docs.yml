@@ -50,6 +50,14 @@ jobs:
           # Команда find гарантирует, что мы берем файлы только из этой папки
           find docs/docgen -name "*.md" -type f | sort | xargs cat > docs/docgen/isolated_text.txt
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      
+      - name: Install Redocly CLI
+        run: npm install -g @redocly/cli
+
       - name: Build Site
         run: mkdocs build --clean --site-dir site
 
