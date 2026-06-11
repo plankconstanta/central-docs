@@ -15,7 +15,7 @@ def on_nav(nav, config, files):
                     project_folder = first_child.url.split('/')[0]
 
                     # Формируем прямую ссылку на скачивание файла
-                    file_url = f"/{project_folder}/isolated_text.txt"
+                    file_url = f"/central-docs/{project_folder}/isolated_text.txt"
 
                     download_link = Link(
                         title="📥 Скачать документацию проекта", 
