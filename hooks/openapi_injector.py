@@ -28,8 +28,7 @@ def on_files(files, config):
                     break
             
             if spec_name:
-                # ИСПРАВЛЕНИЕ: Формируем жесткий абсолютный URL до файла openapi.json от корня сайта
-                # Получится путь вида: /имя-репозитория/central-docs/docgen/openapi.json
+                # Формируем жесткий абсолютный URL до файла openapi.json от корня сайта
                 absolute_spec_url = f"{base_prefix}central-docs/{folder}/{spec_name}"
                 absolute_spec_url = '/' + absolute_spec_url.lstrip('/').replace('//', '/')
 
@@ -38,7 +37,6 @@ def on_files(files, config):
                 
                 with open(api_page_full_path, "w", encoding="utf-8") as f:
                     f.write(f"# Спецификация API\n\n")
-                    # Передаем в src точный абсолютный путь вместо относительного
                     f.write(f'<swagger-ui src="{absolute_spec_url}"/>\n')
                 
                 new_file = File(
@@ -54,7 +52,7 @@ def on_files(files, config):
 
 def on_nav(nav, config, files):
     """
-    ЭТАП 2: Добавляем ссылки в меню, вычисляя правильную папку проекта.
+    ЭТАП 2: Добавляем ссылки в меню, вычисляя папку проекта по его названию (item.title).
     """
     docs_dir = config['docs_dir']
 
@@ -65,37 +63,53 @@ def on_nav(nav, config, files):
         base_prefix = '/'
 
     for item in nav.items:
+        # Проверяем секции первого уровня (папки проектов)
         if isinstance(item, Section) and item.title != "Главная":
-            if item.children:
-                first_child = item.children
-                
+            
+            # НОВЫЙ ПОДХОД: Прямо ищем папку в docs/, которая соответствует этой секции.
+            # Обычно папка называется так же, как проект (например, "docgen"), 
+            # либо мы можем сопоставить её через os.listdir
+            project_folder = None
+            for folder in os.listdir(docs_dir):
+                if os.path.isdir(os.path.join(docs_dir, folder)) and folder != 'hooks':
+                    # Сверяем имя папки (приводим к нижнему регистру для надежности)
+                    if folder.lower() in item.title.lower() or item.title.lower() in folder.lower():
+                        project_folder = folder
+                        break
+            
+            # Если по названию секции папку определить не удалось, используем старый резервный метод по первому файлу
+            if not project_folder and item.children:
+                first_child = item.children[0]
                 if hasattr(first_child, 'url') and '/' in first_child.url:
                     url_parts = [p for p in first_child.url.strip('/').split('/') if p]
+                    if "central-docs" in url_parts: url_parts.remove("central-docs")
+                    if "api-docs" in url_parts: url_parts.remove("api-docs")
+                    if url_parts:
+                        project_folder = url_parts[0]
+
+            # Если папка проекта успешно определена, добавляем ссылки
+            if project_folder:
+                
+                # 1. Добавляем ссылку на Swagger UI (если файл api-docs.md был создан)
+                api_page_rel_path = f"{project_folder}/api-docs.md"
+                if os.path.exists(os.path.join(docs_dir, api_page_rel_path)):
+                    url_suffix = "api-docs/" if config['use_directory_urls'] else "api-docs.html"
+                    full_api_url = f"{base_prefix}central-docs/{project_folder}/{url_suffix}"
+                    full_api_url = '/' + full_api_url.lstrip('/').replace('//', '/')
                     
-                    if "central-docs" in url_parts:
-                        url_parts.remove("central-docs")
-                        
-                    if not url_parts:
-                        continue
-                        
-                    project_folder = url_parts
-                    
-                    # 1. Ссылка на Swagger UI
-                    api_page_rel_path = f"{project_folder}/api-docs.md"
-                    if os.path.exists(os.path.join(docs_dir, api_page_rel_path)):
-                        url_suffix = "api-docs/" if config['use_directory_urls'] else "api-docs.html"
-                        full_api_url = f"{base_prefix}central-docs/{project_folder}/{url_suffix}"
-                        full_api_url = '/' + full_api_url.lstrip('/').replace('//', '/')
-                        
+                    # Проверяем, нет ли уже такой ссылки, чтобы избежать дублирования
+                    if not any(hasattr(c, 'title') and "Swagger" in c.title for p in [item.children] for c in p if p):
                         api_link = Link(title="🌐 Интерактивный Swagger API", url=full_api_url)
                         item.children.append(api_link)
 
-                    # 2. Ссылка на isolated_text.txt
-                    isolated_file_path = os.path.join(docs_dir, project_folder, "isolated_text.txt")
-                    if os.path.exists(isolated_file_path):
-                        full_file_url = f"{base_prefix}central-docs/{project_folder}/isolated_text.txt"
-                        full_file_url = '/' + full_file_url.lstrip('/').replace('//', '/')
-                        
+                # 2. Добавляем ссылку на isolated_text.txt (если он существует)
+                isolated_file_path = os.path.join(docs_dir, project_folder, "isolated_text.txt")
+                if os.path.exists(isolated_file_path):
+                    full_file_url = f"{base_prefix}central-docs/{project_folder}/isolated_text.txt"
+                    full_file_url = '/' + full_file_url.lstrip('/').replace('//', '/')
+                    
+                    # Проверяем, нет ли уже такой ссылки
+                    if not any(hasattr(c, 'title') and "Скачать" in c.title for p in [item.children] for c in p if p):
                         download_link = Link(title="📥 Скачать документацию проекта", url=full_file_url)
                         item.children.append(download_link)
                         
