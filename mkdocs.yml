@@ -38,7 +38,7 @@ theme:
   
 plugins:
   - search
-  - redoc-tag
+  - scalar-tag
   - print-site
   
 # Подключение кастомного CSS для точной подгонки HEX-цветов
