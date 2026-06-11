@@ -2,66 +2,81 @@ import os
 from mkdocs.structure.nav import Section, Link
 from mkdocs.structure.files import File
 
+# Список поддерживаемых расширений OpenAPI
+SPEC_EXTENSIONS = ['openapi.json', 'openapi.yaml', 'openapi.yml', 'swagger.json']
+
+def on_files(files, config):
+    """
+    ЭТАП 1: Находим спецификации и генерируем markdown-страницы ДО построения навигации.
+    """
+    docs_dir = config['docs_dir']
+    
+    # Сканируем папки первого уровня в docs/
+    for folder in os.listdir(docs_dir):
+        folder_path = os.path.join(docs_dir, folder)
+        
+        if os.path.isdir(folder_path) and folder != 'hooks':
+            spec_name = None
+            # Ищем файл спецификации в папке
+            for ext in SPEC_EXTENSIONS:
+                if os.path.exists(os.path.join(folder_path, ext)):
+                    spec_name = ext
+                    break
+            
+            if spec_name:
+                spec_relative_path = f"{folder}/{spec_name}"
+                api_page_rel_path = f"{folder}/api-docs.md"
+                api_page_full_path = os.path.join(docs_dir, api_page_rel_path)
+                
+                # Создаем markdown-файл для Swagger UI
+                with open(api_page_full_path, "w", encoding="utf-8") as f:
+                    f.write(f"# Спецификация API\n\n")
+                    f.write(f'<swagger-ui src="{spec_relative_path}"/>\n')
+                
+                # Создаем объект File и добавляем его в системный список MkDocs
+                new_file = File(
+                    path=api_page_rel_path,
+                    src_dir=docs_dir,
+                    dest_dir=config['site_dir'],
+                    use_directory_urls=config['use_directory_urls']
+                )
+                files.append(new_file)
+                
+    return files
+
+
 def on_nav(nav, config, files):
     """
-    Автоматически добавляет ссылку на интерактивный Swagger и на скачивание
-    монолитного файла для каждого проекта первого уровня.
+    ЭТАП 2: Добавляем ссылки в меню для уже созданных страниц и файлов.
     """
     docs_dir = config['docs_dir']
 
     for item in nav.items:
-        # Проверяем, что это секция (папка) и не главная страница
+        # Работаем только с секциями первого уровня (папками проектов)
         if isinstance(item, Section) and item.title != "Главная":
             if item.children:
-                first_child = item.children[0] # Исправлено: берем первый элемент списка детей
+                first_child = item.children[0]
                 
-                # Извлекаем имя папки проекта из URL его первого документа
                 if hasattr(first_child, 'url') and '/' in first_child.url:
-                    project_folder = first_child.url.split('/')[0] # Исправлено: берем именно строку (имя папки)
+                    project_folder = first_child.url.split('/')[0]
                     
-                    # ----------------------------------------------------
-                    # ЧАСТЬ 1: Поиск OpenAPI/Swagger спецификации
-                    # ----------------------------------------------------
-                    # Добавлен openapi.json в список проверяемых файлов
-                    spec_name = None
-                    for ext in ['openapi.json', 'openapi.yaml', 'openapi.yml', 'swagger.json']:
-                        if os.path.exists(os.path.join(docs_dir, project_folder, ext)):
-                            spec_name = ext
-                            break
-
-                    if spec_name:
-                        spec_relative_path = f"{project_folder}/{spec_name}"
-                        api_page_rel_path = f"{project_folder}/api-docs.md"
-                        api_page_full_path = os.path.join(docs_dir, api_page_rel_path)
-
-                        # Создаем физический markdown-файл для Swagger-плагина
-                        with open(api_page_full_path, "w", encoding="utf-8") as f:
-                            f.write(f"# Спецификация API — {item.title}\n\n")
-                            f.write(f'<swagger-ui src="{spec_relative_path}"/>\n')
-
-                        # Регистрируем новый md-файл в жизненном цикле MkDocs
-                        new_file = File(
-                            path=api_page_rel_path,
-                            src_dir=docs_dir,
-                            dest_dir=config['site_dir'],
-                            use_directory_urls=config['use_directory_urls']
-                        )
-                        files.append(new_file)
-
-                        # Нам нужна относительная ссылка внутри папки проекта, 
-                        # чтобы избежать проблем с базовым URL репозитория на GitHub Pages
+                    # 1. Проверяем, создали ли мы страницу api-docs.md на Этапе 1
+                    api_page_rel_path = f"{project_folder}/api-docs.md"
+                    if os.path.exists(os.path.join(docs_dir, api_page_rel_path)):
+                        
+                        # Формируем корректную ссылку в меню
+                        url_suffix = "api-docs/" if config['use_directory_urls'] else "api-docs.html"
+                        
                         api_link = Link(
                             title="🌐 Интерактивный Swagger API", 
-                            url=f"./api-docs/" if config['use_directory_urls'] else f"./api-docs.html"
+                            url=f"./{url_suffix}"
                         )
+                        # Вставляем ссылку Swagger в начало или в конец списка секции
                         item.children.append(api_link)
 
-                    # ----------------------------------------------------
-                    # ЧАСТЬ 2: Ваша логика для isolated_text.txt
-                    # ----------------------------------------------------
+                    # 2. Логика для isolated_text.txt (остается вашей рабочей)
                     isolated_file_path = os.path.join(docs_dir, project_folder, "isolated_text.txt")
                     if os.path.exists(isolated_file_path):
-                        # Ссылка на скачивание файла относительно папки проекта
                         download_link = Link(
                             title="📥 Скачать документацию проекта", 
                             url=f"./isolated_text.txt"
