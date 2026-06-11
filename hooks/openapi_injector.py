@@ -46,7 +46,6 @@ def on_nav(nav, config, files):
     """
     docs_dir = config['docs_dir']
 
-    # Определяем базовый префикс для GitHub Pages (имя репозитория)
     site_url = config.get('site_url', '')
     if site_url and 'github.io' in site_url:
         base_prefix = '/' + site_url.split('github.io/')[-1].strip('/') + '/'
@@ -59,47 +58,34 @@ def on_nav(nav, config, files):
                 first_child = item.children[0]
                 
                 if hasattr(first_child, 'url') and '/' in first_child.url:
-                    # Очищаем URL от ведущих слешей и разбиваем на части
                     url_parts = [p for p in first_child.url.strip('/').split('/') if p]
                     
-                    # Исправление: Пропускаем "central-docs", если URL начинается с него
-                    if url_parts and url_parts[0] == "central-docs":
-                        url_parts.pop(0)
+                    # Если в пути есть central-docs, убираем его, чтобы найти чистую папку проекта
+                    if "central-docs" in url_parts:
+                        url_parts.remove("central-docs")
                         
                     if not url_parts:
                         continue
                         
-                    # Теперь здесь гарантированно имя папки проекта (например, "docgen")
-                    project_folder = url_parts[0]
+                    project_folder = url_parts[0] # Теперь здесь точно "docgen"
                     
                     # 1. Ссылка на Swagger UI
                     api_page_rel_path = f"{project_folder}/api-docs.md"
                     if os.path.exists(os.path.join(docs_dir, api_page_rel_path)):
                         url_suffix = "api-docs/" if config['use_directory_urls'] else "api-docs.html"
-                        
-                        # Собираем путь: /префикс/central-docs/docgen/api-docs/
                         full_api_url = f"{base_prefix}central-docs/{project_folder}/{url_suffix}"
-                        # Очищаем от возможных двойных слешей //
                         full_api_url = '/' + full_api_url.lstrip('/').replace('//', '/')
                         
-                        api_link = Link(
-                            title="🌐 Интерактивный Swagger API", 
-                            url=full_api_url
-                        )
+                        api_link = Link(title="🌐 Интерактивный Swagger API", url=full_api_url)
                         item.children.append(api_link)
 
                     # 2. Ссылка на isolated_text.txt
                     isolated_file_path = os.path.join(docs_dir, project_folder, "isolated_text.txt")
                     if os.path.exists(isolated_file_path):
-                        
-                        # Собираем путь: /префикс/central-docs/docgen/isolated_text.txt
                         full_file_url = f"{base_prefix}central-docs/{project_folder}/isolated_text.txt"
                         full_file_url = '/' + full_file_url.lstrip('/').replace('//', '/')
                         
-                        download_link = Link(
-                            title="📥 Скачать документацию проекта", 
-                            url=full_file_url
-                        )
+                        download_link = Link(title="📥 Скачать документацию проекта", url=full_file_url)
                         item.children.append(download_link)
                         
     return nav
