@@ -42,18 +42,15 @@ def on_files(files, config):
 
 def on_nav(nav, config, files):
     """
-    ЭТАП 2: Добавляем ссылки в меню, используя абсолютные пути от корня сайта.
+    ЭТАП 2: Добавляем ссылки в меню, вычисляя правильную папку проекта.
     """
     docs_dir = config['docs_dir']
 
     # Определяем базовый префикс для GitHub Pages (имя репозитория)
-    # Если в mkdocs.yml не задан site_url, мы берем имя папки проекта для локальных тестов
     site_url = config.get('site_url', '')
     if site_url and 'github.io' in site_url:
         base_prefix = '/' + site_url.split('github.io/')[-1].strip('/') + '/'
     else:
-        # Для вашего workflow и GitHub Actions обычно имя репо совпадает с папкой сборки,
-        # но мы можем сделать универсальный путь, который работает в корне
         base_prefix = '/'
 
     for item in nav.items:
@@ -62,15 +59,28 @@ def on_nav(nav, config, files):
                 first_child = item.children[0]
                 
                 if hasattr(first_child, 'url') and '/' in first_child.url:
-                    project_folder = first_child.url.split('/')[0]
+                    # Очищаем URL от ведущих слешей и разбиваем на части
+                    url_parts = [p for p in first_child.url.strip('/').split('/') if p]
+                    
+                    # Исправление: Пропускаем "central-docs", если URL начинается с него
+                    if url_parts and url_parts[0] == "central-docs":
+                        url_parts.pop(0)
+                        
+                    if not url_parts:
+                        continue
+                        
+                    # Теперь здесь гарантированно имя папки проекта (например, "docgen")
+                    project_folder = url_parts[0]
                     
                     # 1. Ссылка на Swagger UI
                     api_page_rel_path = f"{project_folder}/api-docs.md"
                     if os.path.exists(os.path.join(docs_dir, api_page_rel_path)):
                         url_suffix = "api-docs/" if config['use_directory_urls'] else "api-docs.html"
                         
-                        # Собираем точный путь от корня до страницы: /префикс/папка_проекта/api-docs/
-                        full_api_url = f"{base_prefix}{project_folder}/{url_suffix}".replace('//', '/')
+                        # Собираем путь: /префикс/central-docs/docgen/api-docs/
+                        full_api_url = f"{base_prefix}central-docs/{project_folder}/{url_suffix}"
+                        # Очищаем от возможных двойных слешей //
+                        full_api_url = '/' + full_api_url.lstrip('/').replace('//', '/')
                         
                         api_link = Link(
                             title="🌐 Интерактивный Swagger API", 
@@ -82,8 +92,9 @@ def on_nav(nav, config, files):
                     isolated_file_path = os.path.join(docs_dir, project_folder, "isolated_text.txt")
                     if os.path.exists(isolated_file_path):
                         
-                        # Собираем точный путь от корня до файла: /префикс/папка_проекта/isolated_text.txt
-                        full_file_url = f"{base_prefix}{project_folder}/isolated_text.txt".replace('//', '/')
+                        # Собираем путь: /префикс/central-docs/docgen/isolated_text.txt
+                        full_file_url = f"{base_prefix}central-docs/{project_folder}/isolated_text.txt"
+                        full_file_url = '/' + full_file_url.lstrip('/').replace('//', '/')
                         
                         download_link = Link(
                             title="📥 Скачать документацию проекта", 
