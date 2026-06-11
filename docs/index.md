@@ -3,6 +3,6 @@
 Выберите интересующий вас проект ниже:
 
 * [Docgen](./docgen/01_index.html)
-* [Проект Бета](./project-beta/01_index.html)
+* [Проект Test](./project-test/01_index.html)
 
 *(Ссылки заработают сразу после сборки сайта)*
