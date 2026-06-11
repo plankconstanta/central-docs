@@ -39,6 +39,13 @@ jobs:
           git clone https://${{ secrets.DOCS_TOKEN }}@github.com/plankconstanta/docgen docgen_repo
           cp -r docgen_repo/docs/* docs/docgen/
 
+          # Копируем openapi.json из корня репозитория в папку документации
+          if [ -f "docgen_repo/openapi.json" ]; then
+            cp docgen_repo/openapi.json docs/docgen/
+          elif [ -f "docgen_repo/swagger.json" ]; then
+            cp docgen_repo/swagger.json docs/docgen/
+          fi
+
           # Автоматически склеиваем ВСЕ markdown-файлы проекта Альфа в один файл isolated_text.txt
           # Команда find гарантирует, что мы берем файлы только из этой папки
           find docs/docgen -name "*.md" -type f | sort | xargs cat > docs/docgen/isolated_text.txt
