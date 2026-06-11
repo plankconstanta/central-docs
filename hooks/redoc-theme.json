@@ -1,0 +1,32 @@
+{
+  "theme": {
+    "colors": {
+      "primary": {
+        "main": "#1E3A8A"
+      },
+      "success": {
+        "main": "#0D9488"
+      },
+      "text": {
+        "primary": "#1F2937",
+        "secondary": "#4B5563"
+      }
+    },
+    "sidebar": {
+      "backgroundColor": "#F8FAFC",
+      "textColor": "#334155",
+      "activeTextColor": "#1E3A8A"
+    },
+    "rightPanel": {
+      "backgroundColor": "#0F172A",
+      "textColor": "#F8FAFC"
+    },
+    "typography": {
+      "fontFamily": "Inter, sans-serif",
+      "headings": {
+        "fontFamily": "Inter, sans-serif",
+        "fontWeight": "700"
+      }
+    }
+  }
+}
