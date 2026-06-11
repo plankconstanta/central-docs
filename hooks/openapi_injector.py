@@ -13,18 +13,18 @@ def on_nav(nav, config, files):
         # Проверяем, что это секция (папка) и не главная страница
         if isinstance(item, Section) and item.title != "Главная":
             if item.children:
-                first_child = item.children[0]
+                first_child = item.children[0] # Исправлено: берем первый элемент списка детей
                 
                 # Извлекаем имя папки проекта из URL его первого документа
                 if hasattr(first_child, 'url') and '/' in first_child.url:
-                    project_folder = first_child.url.split('/')[0]
+                    project_folder = first_child.url.split('/')[0] # Исправлено: берем именно строку (имя папки)
                     
                     # ----------------------------------------------------
                     # ЧАСТЬ 1: Поиск OpenAPI/Swagger спецификации
                     # ----------------------------------------------------
-                    # Проверяем возможные расширения спецификации в папке проекта
+                    # Добавлен openapi.json в список проверяемых файлов
                     spec_name = None
-                    for ext in ['openapi.yaml', 'openapi.yml', 'openapi.json']:
+                    for ext in ['openapi.json', 'openapi.yaml', 'openapi.yml', 'swagger.json']:
                         if os.path.exists(os.path.join(docs_dir, project_folder, ext)):
                             spec_name = ext
                             break
@@ -48,17 +48,12 @@ def on_nav(nav, config, files):
                         )
                         files.append(new_file)
 
-                        # Вычисляем правильный URL в зависимости от настроек MkDocs
-                        page_url = new_file.url if config['use_directory_urls'] else f"{project_folder}/api-docs.html"
-                        
-                        # Добавляем интерактивную страницу API в меню
+                        # Нам нужна относительная ссылка внутри папки проекта, 
+                        # чтобы избежать проблем с базовым URL репозитория на GitHub Pages
                         api_link = Link(
-                            title="🌐 Интерактивный Swagger API",
-                            url=f"/{config['site_name'].lower().replace(' ', '-')}/{page_url}" if config.get('site_url') else f"/{page_url}"
+                            title="🌐 Интерактивный Swagger API", 
+                            url=f"./api-docs/" if config['use_directory_urls'] else f"./api-docs.html"
                         )
-                        # Если сайт деплоится на GitHub Pages без кастомного домена, 
-                        # базовый путь может содержать имя репозитория. Для универсальности:
-                        api_link = Link(title="🌐 Интерактивный Swagger API", url=f"./{page_url.split('/')[-1]}")
                         item.children.append(api_link)
 
                     # ----------------------------------------------------
@@ -66,12 +61,10 @@ def on_nav(nav, config, files):
                     # ----------------------------------------------------
                     isolated_file_path = os.path.join(docs_dir, project_folder, "isolated_text.txt")
                     if os.path.exists(isolated_file_path):
-                        # Ссылка на скачивание файла относительно корня сайта
-                        file_url = f"{project_folder}/isolated_text.txt"
-                        
+                        # Ссылка на скачивание файла относительно папки проекта
                         download_link = Link(
                             title="📥 Скачать документацию проекта", 
-                            url=file_url
+                            url=f"./isolated_text.txt"
                         )
                         item.children.append(download_link)
                         
