@@ -78,11 +78,12 @@ def on_nav(nav, config, files):
                         if "api-docs" in url_parts: url_parts.remove("api-docs")
                         
                         if url_parts:
-                            project_folder = url_parts
+                            # ИСПРАВЛЕНИЕ: берем первый элемент списка, чтобы получить строку (например, "docgen")
+                            project_folder = url_parts[0]
                             break
 
-            # Если папку проекта успешно определили
-            if project_folder:
+            # Если папку проекта успешно определили и это строка
+            if project_folder and isinstance(project_folder, str):
                 
                 # Собираем список существующих названий в этой секции, защищаясь от None-значений
                 existing_titles = []
