@@ -49,45 +49,40 @@ def generate_redoc_html(spec_path, output_path):
 
 def generate_asyncapi_html(spec_name, output_path):
     """
-    Генерация standalone AsyncAPI HTML.
+    Генерация standalone AsyncAPI HTML через Web Component.
+    Работает на GitHub Pages без дополнительных сборщиков.
     """
 
-    html = f"""
-<!DOCTYPE html>
-<html>
+    html = f"""<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="utf-8">
+    <meta charset="utf-8">
 
-  <title>AsyncAPI Reference</title>
+    <title>AsyncAPI Reference</title>
 
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@asyncapi/web-component@latest/lib/asyncapi-web-component.js"></script>
 
-  <script src="https://unpkg.com/@asyncapi/react-component/browser/asyncapi-react.min.js"></script>
+    <style>
+        html,
+        body {{
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+        }}
 
-  <style>
-    body {{
-      margin: 0;
-      padding: 0;
-    }}
-  </style>
+        asyncapi-component {{
+            height: 100vh;
+            width: 100%;
+        }}
+    </style>
 </head>
 
 <body>
 
-<div id="asyncapi"></div>
-
-<script>
-
-window.onload = function() {{
-
-    AsyncApiStandalone.render({{
-        schema: "{spec_name}"
-    }}, document.getElementById('asyncapi'));
-
-}};
-
-</script>
+<asyncapi-component
+    schema-url="{spec_name}">
+</asyncapi-component>
 
 </body>
 </html>
@@ -97,7 +92,6 @@ window.onload = function() {{
         f.write(html)
 
     print(f"[AsyncAPI] Generated: {output_path}")
-
 
 def on_files(files, config):
     docs_dir = config["docs_dir"]
