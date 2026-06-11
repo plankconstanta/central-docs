@@ -24,7 +24,7 @@ def on_nav(nav, config, files):
                     # ----------------------------------------------------
                     # Проверяем возможные расширения спецификации в папке проекта
                     spec_name = None
-                    for ext in ['openapi.yaml', 'openapi.yml', 'swagger.json']:
+                    for ext in ['openapi.yaml', 'openapi.yml', 'openapi.json']:
                         if os.path.exists(os.path.join(docs_dir, project_folder, ext)):
                             spec_name = ext
                             break
