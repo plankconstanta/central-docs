@@ -1,3 +1,8 @@
+---
+hide:
+  - navigation
+---
+
 # Документация
 
 <div class="grid cards" markdown>
