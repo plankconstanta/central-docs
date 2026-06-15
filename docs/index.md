@@ -35,8 +35,9 @@ hide:
 
 Документация генератора технической документации.
 
-[Перейти к проекту](./docgen/01_index.html)
+[:material-arrow-right-circle: Открыть проект](./docgen/01_index.html){ .md-button .md-button--primary }
 
 ### Проект Test
 
 Тестовый проект для демонстрации структуры документации.
+[:material-arrow-right-circle: Открыть проект](./project-test/01_index.html){ .md-button }
