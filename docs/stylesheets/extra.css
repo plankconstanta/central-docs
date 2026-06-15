@@ -199,3 +199,85 @@ input {
   font-size: 1.15rem;
   opacity: .85;
 }
+
+/* ==================================================
+   ASYNCAPI-LIKE SEARCH
+================================================== */
+
+/* Контейнер поиска */
+.md-search {
+  padding: 0 0.5rem;
+}
+
+/* Форма поиска */
+.md-search__form {
+  height: 44px;
+
+  background: rgba(255,255,255,0.95);
+
+  border-radius: 999px;
+
+  box-shadow:
+    0 2px 8px rgba(0,0,0,.08),
+    0 8px 24px rgba(0,0,0,.08);
+
+  transition: all .2s ease;
+}
+
+/* Hover */
+.md-search__form:hover {
+  box-shadow:
+    0 4px 12px rgba(0,0,0,.10),
+    0 12px 30px rgba(0,0,0,.12);
+}
+
+/* Focus */
+.md-search__form:focus-within {
+  box-shadow:
+    0 0 0 4px rgba(13,148,136,.15),
+    0 12px 30px rgba(0,0,0,.12);
+}
+
+/* Поле ввода */
+.md-search__input {
+  color: #1E293B;
+  font-size: 0.9rem;
+}
+
+/* Placeholder */
+.md-search__input::placeholder {
+  color: #64748B;
+}
+
+/* Иконка поиска */
+.md-search__icon {
+  color: #64748B;
+}
+
+/* Кнопка очистки */
+.md-search__icon[for="__search"] {
+  color: #64748B;
+}
+
+/* Выпадающий список результатов */
+.md-search-result {
+  margin-top: 0.5rem;
+
+  border-radius: 18px;
+
+  overflow: hidden;
+
+  box-shadow:
+    0 10px 40px rgba(0,0,0,.15);
+}
+
+/* Элементы результатов */
+.md-search-result__article {
+  padding: 0.8rem 1rem;
+}
+
+/* Подсветка совпадений */
+.md-search-result mark {
+  background: rgba(13,148,136,.15);
+  color: #0D9488;
+}
