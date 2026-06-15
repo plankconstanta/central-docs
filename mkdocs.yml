@@ -1,8 +1,5 @@
 site_name: "ДИТ. Проекты. Документация"
 site_url: ""
-
-nav:
-  - Документация: index.md
       
 use_directory_urls: false
 
