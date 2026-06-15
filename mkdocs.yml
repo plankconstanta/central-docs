@@ -2,10 +2,12 @@ site_name: "ДИТ. Проекты. Документация"
 site_url: ""
 
 nav:
+  - Портал: index.md
+
   - Проекты:
       - docgen/index_01.md
       - project-test/index_02.md
-
+      
 use_directory_urls: false
 
 theme:
