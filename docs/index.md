@@ -12,3 +12,5 @@ hide:
 
 ### Проект Test
 [Тестовый проект для демонстрации структуры документации.](./project-test/01_index.html)
+
+[### Проект Test 2](./project-test-2/01_index.html)
