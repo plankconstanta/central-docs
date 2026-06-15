@@ -24,3 +24,7 @@ hide:
   Единая точка доступа ко всей технической документации.
 
 </div>
+
+# Проекты
+* [Docgen](./docgen/01_index.html)
+* [Проект Test](./project-test/01_index.html)
